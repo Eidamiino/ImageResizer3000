@@ -14,17 +14,15 @@ namespace ImageResizer3000
 		static void Main(string[] args)
 
 		{
-
-
-			var path = args[0];
-			var command = args[1];
-
-			switch (command)
+			Arguments arguments = new Arguments(args);
+			//var path = args[0];
+			//var command = args[1];
+			switch (arguments.command)
 			{
 				case "-r":
 				case "--resize":
 				{
-					var allImagesPath = Directory.GetFiles(path, SearchedExtensions);
+					var allImagesPath = Directory.GetFiles(arguments.dirPath, SearchedExtensions);
 					if (allImagesPath.Length == 0)
 					{
 						Console.WriteLine("Entered directory does not contain any jpg/jpeg files to resize");
