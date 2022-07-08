@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ImageResizer3000": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Users\\Sadilos\\Desktop\\imageresizertest -r -w=400"
+    }
+  }
+}
