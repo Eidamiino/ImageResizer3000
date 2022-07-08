@@ -21,7 +21,8 @@ namespace ImageResizer3000
 
 			DirPath = argsFromMain[0];
 			Command = argsFromMain[1];
-			Width = int.Parse(argsFromMain[2].Substring(argsFromMain[2].IndexOf('=')+1));
+			if (argsFromMain.Length > 2)
+				Width = int.Parse(argsFromMain[2].Substring(argsFromMain[2].IndexOf('=') + 1));
 		}
 
 		public string DirPath
@@ -55,11 +56,7 @@ namespace ImageResizer3000
 		public static bool DirExists(string dirPath)
 		{
 			if (!Directory.Exists(dirPath))
-			{
-				Console.WriteLine($"Directory with path {dirPath} does not exist");
 				return false;
-			}
-
 			return true;
 		}
 	}

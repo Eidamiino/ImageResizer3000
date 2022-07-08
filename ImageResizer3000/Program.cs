@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SixLabors.ImageSharp;
@@ -8,41 +9,69 @@ namespace ImageResizer3000
 {
 	internal class Program
 	{
-		//konstantni list hledanych pripon
-		public const string SearchedExtensions = "*.jpg";
+		public static List<string> AllowedExtensions = new List<string> {".jpg", ".jpeg"};
+		public const int ThumbSize = 75;
 
 		static void Main(string[] args)
-
 		{
 			Arguments arguments = new Arguments(args);
-			//var path = args[0];
-			//var command = args[1];
+			//make a function for all the shit that just repeats
 			switch (arguments.command)
 			{
+				//add check for files already existing
+				//timer
 				case "-r":
 				case "--resize":
 				{
-					var allImagesPath = Directory.GetFiles(arguments.dirPath, SearchedExtensions);
-					if (allImagesPath.Length == 0)
+					var imagesPath = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					foreach (var imagePath in imagesPath)
 					{
-						Console.WriteLine("Entered directory does not contain any jpg/jpeg files to resize");
-						return;
-					}
-
-					foreach (var imagePath in allImagesPath)
-					{
-						string width = args[2].Substring(3);
-
 						using Image image = Image.Load(imagePath);
-						image.Mutate(x => x.Resize(0,int.Parse(width)));
-						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{width}");
+						image.Mutate(x => x.Resize(arguments.width, 0));
+						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{arguments.width}");
 						image.Save(outPath);
-						Console.WriteLine($"Image {imagePath.Substring(0,imagePath.IndexOf('.'))} resized in ms");
-
-
+						Console.WriteLine($"Image {imagePath.Substring(0, imagePath.IndexOf('.'))} resized in ms");
 					}
 				}
 					break;
+				//add timer
+				case "-t":
+				case "--thumbs":
+				{
+					CreateFolderIfDoesNotExist($"{arguments.dirPath}\\thumbs");
+					var imagePaths = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					foreach (var imagePath in imagePaths)
+					{
+						if (imagePath.Substring(imagePath.IndexOf('.')).Contains($".{ThumbSize}."))
+							File.Delete(imagePath);
+
+						using Image image = Image.Load(imagePath);
+						image.Mutate(x => x.Resize(ThumbSize, 0));
+						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{ThumbSize}");
+						outPath = outPath.Insert(outPath.LastIndexOf('\\'), "\\thumbs");
+						image.Save(outPath);
+						Console.WriteLine($"Image thumb for {imagePath.Substring(0, imagePath.IndexOf('.'))} created in ms");
+					}
+				}
+					break;
+				case "-c":
+				case "--clean":
+				{
+					//delete all files first
+					//currently only checks for images with 75 in its name instead of all numbered files, should work with two indexof '.' but I want to sleep man
+					Directory.Delete($"{arguments.dirPath}\\thumbs");
+					var imagePaths = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					foreach (var imagePath in imagePaths)
+					{
+						if (imagePath.Substring(imagePath.IndexOf('.')).Contains($".{ThumbSize}."))
+							File.Delete(imagePath);
+					}
+				}
+					break;
+				default:
+				{
+					throw new Exception("Incorrect args!");
+				}
 			}
 
 			{
@@ -59,6 +88,21 @@ namespace ImageResizer3000
 			return value;
 		}
 
-		
+		private static void CreateFolderIfDoesNotExist(string path)
+		{
+			if (!Arguments.DirExists(path))
+				Directory.CreateDirectory(path);
+		}
+
+		private static List<string> GetFilesOfType(string path, List<string> extensions)
+		{
+			var allImagesPath = Directory
+				.GetFiles(path)
+				.Where(x => extensions.Any(x.ToLower().EndsWith))
+				.ToList();
+			if (!allImagesPath.Any())
+				throw new Exception("Entered directory does not contain any jpg/jpeg files to resize");
+			return allImagesPath;
+		}
 	}
 }
