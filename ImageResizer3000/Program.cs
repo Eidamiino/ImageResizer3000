@@ -52,20 +52,21 @@ namespace ImageResizer3000
 						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{ThumbSize}");
 						outPath = outPath.Insert(outPath.LastIndexOf('\\'), "\\thumbs");
 						image.Save(outPath);
-						Console.WriteLine($"Image thumb for {imagePath.Substring(0, imagePath.IndexOf('.'))} created in {GetElapsedTime(stopwatch)}ms");
+						Console.WriteLine(
+							$"Image thumb for {imagePath.Substring(0, imagePath.IndexOf('.'))} created in {GetElapsedTime(stopwatch)}ms");
 					}
 				}
 					break;
 				case "c":
 				case "clean":
 				{
-					//delete all files first
-					//currently only checks for images with 75 in its name instead of all numbered files, should work with two indexof '.' but I want to sleep man
-					Directory.Delete($"{arguments.dirPath}\\thumbs");
+					if (Directory.Exists($"{arguments.dirPath}\\thumbs"))
+						RemoveThumbs(arguments);
 					var imagePaths = GetFilesOfType(arguments.dirPath, AllowedExtensions);
 					foreach (var imagePath in imagePaths)
 					{
-						if (imagePath.Substring(imagePath.IndexOf('.')).Contains($".{ThumbSize}."))
+						string pathExtension = imagePath.Substring(imagePath.IndexOf('.')+1, 1);
+						if (pathExtension.Any(char.IsDigit))
 							File.Delete(imagePath);
 					}
 				}
@@ -75,6 +76,17 @@ namespace ImageResizer3000
 					throw new Exception("Incorrect args!");
 				}
 			}
+		}
+
+		private static void RemoveThumbs(Arguments arguments)
+		{
+			var thumbPaths = Directory.GetFiles($"{arguments.dirPath}\\thumbs");
+			foreach (var thumbPath in thumbPaths)
+			{
+				File.Delete(thumbPath);
+			}
+
+			Directory.Delete($"{arguments.dirPath}\\thumbs");
 		}
 
 
@@ -95,13 +107,13 @@ namespace ImageResizer3000
 
 		private static List<string> GetFilesOfType(string path, List<string> extensions)
 		{
-			var allImagesPath = Directory
+			var allFilesPaths = Directory
 				.GetFiles(path)
 				.Where(x => extensions.Any(x.ToLower().EndsWith))
 				.ToList();
-			if (!allImagesPath.Any())
-				throw new Exception("Entered directory does not contain any jpg/jpeg files to resize");
-			return allImagesPath;
+			if (!allFilesPaths.Any())
+				throw new Exception("Entered directory does not contain any files with these extensions");
+			return allFilesPaths;
 		}
 
 		private static Stopwatch StartTimer()
