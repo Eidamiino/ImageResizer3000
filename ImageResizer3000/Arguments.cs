@@ -15,8 +15,7 @@ namespace ImageResizer3000
 		{
 			if (argsFromMain.Length < 2)
 			{
-				Console.WriteLine("Invalid args!");
-				return;
+				throw new Exception("Invalid args! Please enter a valid path and a command");
 			}
 
 			DirPath = argsFromMain[0];
