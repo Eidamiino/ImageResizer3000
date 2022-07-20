@@ -8,18 +8,47 @@ namespace ImageResizer3000
 	internal class Arguments
 	{
 		private string dirPath;
-		private string command;
+
+		public enum CommandType
+		{
+			Resize,
+			Thumbs,
+			Clean
+		}
+		private CommandType command;
 		private int width;
 
 		public Arguments(string[] argsFromMain)
 		{
 			if (argsFromMain.Length < 2)
-			{
 				throw new Exception("Invalid args! Please enter a valid path and a command");
-			}
 
 			DirPath = argsFromMain[0];
-			Command = argsFromMain[1];
+			switch (argsFromMain[1].TrimStart('-'))
+			{
+				case "r":
+				case "resize":
+				{
+					Command = CommandType.Resize;
+				}
+					break;
+				case "t":
+				case "thumbs":
+				{
+					Command = CommandType.Thumbs;
+				}
+					break;
+				case "c":
+				case "clean":
+				{
+					Command = CommandType.Clean;
+				}
+					break;
+				default:
+				{
+					throw new Exception("Incorrect args");
+				}
+			}
 			if (argsFromMain.Length > 2)
 				Width = int.Parse(argsFromMain[2].Substring(argsFromMain[2].IndexOf('=') + 1));
 		}
@@ -35,7 +64,7 @@ namespace ImageResizer3000
 			}
 		}
 
-		public string Command
+		public CommandType Command
 		{
 			get { return command; }
 			private set { command = value; }
