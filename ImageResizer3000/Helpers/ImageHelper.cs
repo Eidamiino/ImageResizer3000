@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 
-namespace ImageResizer3000
+namespace ImageResizer3000.Helpers
 {
 	internal class ImageHelpers
 	{
