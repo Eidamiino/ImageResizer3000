@@ -12,27 +12,54 @@ namespace ImageResizer3000
 	{
 		public static List<string> AllowedExtensions = new List<string> {".jpg", ".jpeg"};
 		public const int ThumbSize = 75;
+		public const string ThumbFolderName = "\\thumbs";
 
 		static void Main(string[] args)
 		{
-			Arguments arguments = new Arguments(args);
-			//make a function for all the shit that just repeats
-			switch (arguments.command.TrimStart('-'))
+			Arguments arguments;
+			try
 			{
-				//add check for files already existing
+				arguments = new Arguments(args);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.Message);
+				return;
+			}
+
+			switch (arguments.Command.TrimStart('-'))
+			{
 				case "r":
 				case "resize":
 				{
-					var imagesPath = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					if (arguments.Width == 0)
+					{
+						Console.WriteLine("Invalid width");
+						break;
+					}
+
+					var imagesPath = GetFilesOfType(arguments.DirPath, AllowedExtensions);
+					if (!imagesPath.Any())
+					{
+						Console.WriteLine("No files of set type found");
+						break;
+					}
+
 					foreach (var imagePath in imagesPath)
 					{
+						if (imagePath.Substring(imagePath.IndexOf('.') + 1).Any(char.IsDigit))
+						{
+							File.Delete(imagePath);
+							continue;
+						}
+
 						var stopwatch = StartTimer();
 						using Image image = Image.Load(imagePath);
-						image.Mutate(x => x.Resize(arguments.width, 0));
-						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{arguments.width}");
+						image.Mutate(x => x.Resize(arguments.Width, 0));
+						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{arguments.Width}");
 						image.Save(outPath);
 						Console.WriteLine(
-							$"Image {imagePath.Substring(0, imagePath.IndexOf('.'))} resized in {GetElapsedTime(stopwatch)}ms");
+							$"Image {imagePath.Substring(0, imagePath.IndexOf('.'))} resized in {StopTimerGetElapsedTime(stopwatch)}ms");
 					}
 				}
 					break;
@@ -40,8 +67,14 @@ namespace ImageResizer3000
 				case "t":
 				case "thumbs":
 				{
-					CreateFolderIfDoesNotExist($"{arguments.dirPath}\\thumbs");
-					var imagePaths = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					CreateFolderIfDoesntExist($"{arguments.DirPath}{ThumbFolderName}");
+					var imagePaths = GetFilesOfType(arguments.DirPath, AllowedExtensions);
+					if (!imagePaths.Any())
+					{
+						Console.WriteLine("No files of set type found");
+						break;
+					}
+
 					foreach (var imagePath in imagePaths)
 					{
 						if (imagePath.Substring(imagePath.IndexOf('.')).Contains($".{ThumbSize}."))
@@ -50,56 +83,47 @@ namespace ImageResizer3000
 						using Image image = Image.Load(imagePath);
 						image.Mutate(x => x.Resize(ThumbSize, 0));
 						string outPath = imagePath.Insert(imagePath.IndexOf('.'), $".{ThumbSize}");
-						outPath = outPath.Insert(outPath.LastIndexOf('\\'), "\\thumbs");
+						outPath = outPath.Insert(outPath.LastIndexOf('\\'), $"{ThumbFolderName}");
 						image.Save(outPath);
 						Console.WriteLine(
-							$"Image thumb for {imagePath.Substring(0, imagePath.IndexOf('.'))} created in {GetElapsedTime(stopwatch)}ms");
+							$"Image thumb for {imagePath.Substring(0, imagePath.IndexOf('.'))} created in {StopTimerGetElapsedTime(stopwatch)}ms");
 					}
 				}
 					break;
 				case "c":
 				case "clean":
 				{
-					if (Directory.Exists($"{arguments.dirPath}\\thumbs"))
+					if (Directory.Exists($"{arguments.DirPath}{ThumbFolderName}"))
 						RemoveThumbs(arguments);
-					var imagePaths = GetFilesOfType(arguments.dirPath, AllowedExtensions);
+					var imagePaths = GetFilesOfType(arguments.DirPath, AllowedExtensions);
 					foreach (var imagePath in imagePaths)
 					{
-						string pathExtension = imagePath.Substring(imagePath.IndexOf('.')+1, 1);
-						if (pathExtension.Any(char.IsDigit))
+						if (imagePath.Substring(imagePath.IndexOf('.') + 1).Any(char.IsDigit))
 							File.Delete(imagePath);
 					}
+					Console.WriteLine("Cleared!");
 				}
 					break;
 				default:
 				{
-					throw new Exception("Incorrect args!");
+					Console.WriteLine("Incorrect args!");
+					break;
 				}
 			}
 		}
 
 		private static void RemoveThumbs(Arguments arguments)
 		{
-			var thumbPaths = Directory.GetFiles($"{arguments.dirPath}\\thumbs");
+			var thumbPaths = Directory.GetFiles($"{arguments.DirPath}{ThumbFolderName}");
 			foreach (var thumbPath in thumbPaths)
 			{
 				File.Delete(thumbPath);
 			}
 
-			Directory.Delete($"{arguments.dirPath}\\thumbs");
+			Directory.Delete($"{arguments.DirPath}{ThumbFolderName}");
 		}
 
-
-		private static string ReadValue(string label, string defaultValue)
-		{
-			Console.Write($"{label} (default: {defaultValue}): ");
-			string value = Console.ReadLine();
-			if (value == "")
-				return defaultValue;
-			return value;
-		}
-
-		private static void CreateFolderIfDoesNotExist(string path)
+		private static void CreateFolderIfDoesntExist(string path)
 		{
 			if (!Arguments.DirExists(path))
 				Directory.CreateDirectory(path);
@@ -111,8 +135,6 @@ namespace ImageResizer3000
 				.GetFiles(path)
 				.Where(x => extensions.Any(x.ToLower().EndsWith))
 				.ToList();
-			if (!allFilesPaths.Any())
-				throw new Exception("Entered directory does not contain any files with these extensions");
 			return allFilesPaths;
 		}
 
@@ -123,7 +145,7 @@ namespace ImageResizer3000
 			return stopwatch;
 		}
 
-		private static int GetElapsedTime(Stopwatch stopwatch)
+		private static int StopTimerGetElapsedTime(Stopwatch stopwatch)
 		{
 			stopwatch.Stop();
 			TimeSpan ts = stopwatch.Elapsed;

@@ -7,9 +7,9 @@ namespace ImageResizer3000
 {
 	internal class Arguments
 	{
-		public string dirPath;
-		public string command;
-		public int width;
+		private string dirPath;
+		private string command;
+		private int width;
 
 		public Arguments(string[] argsFromMain)
 		{
@@ -30,7 +30,7 @@ namespace ImageResizer3000
 			private set
 			{
 				if (!DirExists(value))
-					throw new Exception("Error");
+					throw new Exception("Directory doesn't exist");
 				dirPath = value;
 			}
 		}
