@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
-namespace ImageResizer3000
+namespace ImageResizer3000.Helpers
 {
 	internal class FileHelpers
 	{
-		public static void CreateFolderIfDoesntExist(string path)
+		public static void EnsureFolder(string path)
 		{
 			if (!Arguments.DirExists(path))
 				Directory.CreateDirectory(path);

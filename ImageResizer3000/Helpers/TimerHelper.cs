@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
-namespace ImageResizer3000
+namespace ImageResizer3000.Helpers
 {
-	internal class Helpers
+	internal class TimerHelper
 	{
 		public static Stopwatch StartTimer()
 		{

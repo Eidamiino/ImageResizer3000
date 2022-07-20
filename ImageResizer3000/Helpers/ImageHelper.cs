@@ -6,12 +6,21 @@ using SixLabors.ImageSharp.Processing;
 
 namespace ImageResizer3000.Helpers
 {
-	internal class ImageHelpers
+	internal class ImageHelper
 	{
-		public static List<string> AllowedExtensions = new List<string> { ".jpg", ".jpeg" };
-		public const string ThumbFolderName = "\\thumbs";
-		public const int ThumbSize = 75;
-		public static void DeleteAllResizedImages(string dirPath)
+		private readonly string thumbFolderPath;
+		
+		public static List<string> AllowedExtensions { get; } = new List<string> { ".jpg", ".jpeg" };
+		
+		public int ThumbSize { get; }
+
+		public ImageHelper(string thumbFolderPath, int thumbSize = 75)
+		{
+			this.thumbFolderPath = thumbFolderPath;
+			ThumbSize = thumbSize;
+		}
+
+		public void DeleteAllResizedImages(string dirPath)
 		{
 			var imagePaths = FileHelpers.GetFilesOfType(dirPath, AllowedExtensions);
 			foreach (var imagePath in imagePaths)
@@ -21,7 +30,7 @@ namespace ImageResizer3000.Helpers
 			}
 		}
 
-		public static bool DeleteResizeIfExists(string imagePath)
+		public bool DeleteResizeIfExists(string imagePath)
 		{
 			if (imagePath.Substring(imagePath.IndexOf('.') + 1, 2).Any(char.IsDigit))
 			{
@@ -32,7 +41,7 @@ namespace ImageResizer3000.Helpers
 			return false;
 		}
 
-		public static void ResizeImageAndSave(string path, int width, string pathToSave)
+		public void ResizeImageAndSave(string path, int width, string pathToSave)
 		{
 			using Image image = Image.Load(path);
 			image.Mutate(x => x.Resize(width, 0));
@@ -40,15 +49,15 @@ namespace ImageResizer3000.Helpers
 			image.Save(outPath);
 		}
 
-		public static void RemoveThumbs(string dirPath)
+		public void RemoveThumbs(string dirPath)
 		{
-			var thumbPaths = Directory.GetFiles($"{dirPath}{ThumbFolderName}");
+			var thumbPaths = Directory.GetFiles($"{dirPath}{thumbFolderPath}");
 			foreach (var thumbPath in thumbPaths)
 			{
 				File.Delete(thumbPath);
 			}
 
-			Directory.Delete($"{dirPath}{ThumbFolderName}");
+			Directory.Delete($"{dirPath}{thumbFolderPath}");
 		}
 	}
 }
