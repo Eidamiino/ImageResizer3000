@@ -27,14 +27,12 @@ namespace ImageResizer3000
 			{
 				case Arguments.CommandType.Resize:
 				{
-					if (arguments.Width == 0)
-					{
-						Console.WriteLine("Invalid width");
-						break;
-					}
 					var imagePaths = FileHelpers.GetFilesOfType(arguments.DirPath, ImageHelpers.AllowedExtensions);
 					if (!imagePaths.Any())
+					{
+						Console.WriteLine("No files found");
 						break;
+					}
 
 					foreach (var imagePath in imagePaths)
 					{
@@ -53,7 +51,10 @@ namespace ImageResizer3000
 					FileHelpers.CreateFolderIfDoesntExist($"{arguments.DirPath}{ImageHelpers.ThumbFolderName}");
 					var imagePaths = FileHelpers.GetFilesOfType(arguments.DirPath, ImageHelpers.AllowedExtensions);
 					if (!imagePaths.Any())
+					{
+						Console.WriteLine("No files found");
 						break;
+					}
 
 					foreach (var imagePath in imagePaths)
 					{
