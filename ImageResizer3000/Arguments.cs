@@ -16,7 +16,6 @@ namespace ImageResizer3000
 			Clean
 		}
 
-		private CommandType command;
 		private int width;
 
 		public Arguments(string[] argsFromMain)
@@ -27,10 +26,10 @@ namespace ImageResizer3000
 			DirPath = argsFromMain[0];
 			if (argsFromMain.Length > 2)
 				Width = int.Parse(argsFromMain[2].Substring(argsFromMain[2].IndexOf('=') + 1));
-			switch (argsFromMain[1].TrimStart('-'))
+			switch (argsFromMain[1].Remove(0,1))
 			{
 				case "r":
-				case "resize":
+				case "-resize":
 				{
 					if (Width == 0)
 						throw new Exception("Invalid width");
@@ -38,13 +37,13 @@ namespace ImageResizer3000
 				}
 					break;
 				case "t":
-				case "thumbs":
+				case "-thumbs":
 				{
 					Command = CommandType.Thumbs;
 				}
 					break;
 				case "c":
-				case "clean":
+				case "-clean":
 				{
 					Command = CommandType.Clean;
 				}
@@ -67,11 +66,7 @@ namespace ImageResizer3000
 			}
 		}
 
-		public CommandType Command
-		{
-			get => command;
-			private set => command = value;
-		}
+		public CommandType Command { get; private set; }
 
 		public int Width
 		{

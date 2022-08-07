@@ -12,7 +12,7 @@ namespace ImageResizer3000.Helpers
 		
 		public static List<string> AllowedExtensions { get; } = new List<string> { ".jpg", ".jpeg" };
 		
-		public int ThumbSize { get; }
+		public static int ThumbSize { get; set; }
 
 		public ImageHelper(string thumbFolderPath, int thumbSize = 75)
 		{
@@ -49,15 +49,17 @@ namespace ImageResizer3000.Helpers
 			image.Save(outPath);
 		}
 
-		public void RemoveThumbs(string dirPath)
+		public void RemoveThumbs(string dirPath, string thumbFolderName)
 		{
-			var thumbPaths = Directory.GetFiles($"{dirPath}{thumbFolderPath}");
+			if (!Directory.Exists($"{dirPath}\\{thumbFolderName}"))
+				return;
+			var thumbPaths = Directory.GetFiles($"{dirPath}\\{thumbFolderName}");
 			foreach (var thumbPath in thumbPaths)
 			{
 				File.Delete(thumbPath);
 			}
 
-			Directory.Delete($"{dirPath}{thumbFolderPath}");
+			Directory.Delete($"{dirPath}\\{thumbFolderName}");
 		}
 	}
 }
